@@ -1334,20 +1334,30 @@ document.getElementById('clear-queue-btn').onclick=()=>{if(!confirm('Clear the d
    INIT
 ══════════════════════════════════════════════════ */
 (function(){
-  const s=getSettings();updateFontLabel(s.fontSize);
-  if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.addEventListener('voiceschanged',()=>window.speechSynthesis.getVoices());}
-  
-  // Restore last screen on refresh
-  const lastScreen = Store.get('mdict_last_screen', 'home');
-  const lastWord = Store.get('mdict_last_word');
-  
-  if (lastScreen && lastScreen !== 'home' && lastScreen !== 'null') {
-    navigate(lastScreen);
-  } else if (lastWord && lastWord !== 'null') {
-    document.getElementById('search-input').value = lastWord;
-    lookupWord(lastWord);
+  try {
+    const s=getSettings();updateFontLabel(s.fontSize);
+    if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.addEventListener('voiceschanged',()=>window.speechSynthesis.getVoices());}
+    
+    // Restore last screen on refresh
+    const lastScreen = Store.get('mdict_last_screen', 'home');
+    const lastWord = Store.get('mdict_last_word');
+    
+    if (lastScreen && lastScreen !== 'home' && lastScreen !== 'null') {
+      navigate(lastScreen);
+    } else if (lastWord && lastWord !== 'null') {
+      document.getElementById('search-input').value = lastWord;
+      lookupWord(lastWord);
+    } else {
+      navigate('home'); // Ensure home is properly initialized
+    }
+    
+    if(s.notifEnabled&&'Notification' in window&&Notification.permission==='granted')scheduleNotification();
+    else setTimeout(showNotifBanner,3000);
+    
+  } catch(e) {
+    console.error("Init error:", e);
+  } finally {
+    // ALWAYS reveal the page, no matter what happens above
+    document.body.style.visibility = 'visible';
   }
-  
-  if(s.notifEnabled&&'Notification' in window&&Notification.permission==='granted')scheduleNotification();
-  else setTimeout(showNotifBanner,3000);
 })();
