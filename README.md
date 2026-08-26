@@ -28,6 +28,7 @@ This is a  responsive web dictionary application featuring multi-source API inte
 ### API Management & Fallbacks
 *   **Free Mode:** Simultaneously fetches from Free Dictionary API and Wiktionary. Falls back to Urban Dictionary if both fail.
 *   **Merriam-Webster Mode:** Prioritizes MW Dictionary API. Falls back to Free APIs only if MW fails or the word is not found.
+*   **Gemini 2.5 Flash:** The Gemini 2.5 Flash API is used for bilingual translation and more simplified definition. 
 
 ### History, Bookmarks & Daily Word
 *   **Search History:** Auto-saves searches with filtering and quick-delete options.
