@@ -555,6 +555,7 @@ async function lookupWord(word){
   word=word.trim().toLowerCase();
   if(!word)return;
   currentWord=word;
+  Store.set('mdict_last_word', word); // Saves the last searched word
   _currentLangMode='english';
   switchTab(0);
   if(!document.getElementById('screen-home').classList.contains('active'))navigate('home');
@@ -1335,6 +1336,18 @@ document.getElementById('clear-queue-btn').onclick=()=>{if(!confirm('Clear the d
 (function(){
   const s=getSettings();updateFontLabel(s.fontSize);
   if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.addEventListener('voiceschanged',()=>window.speechSynthesis.getVoices());}
+  
+  // Restore last screen on refresh
+  const lastScreen = Store.get('mdict_last_screen', 'home');
+  const lastWord = Store.get('mdict_last_word');
+  
+  if (lastScreen && lastScreen !== 'home' && lastScreen !== 'null') {
+    navigate(lastScreen);
+  } else if (lastWord && lastWord !== 'null') {
+    document.getElementById('search-input').value = lastWord;
+    lookupWord(lastWord);
+  }
+  
   if(s.notifEnabled&&'Notification' in window&&Notification.permission==='granted')scheduleNotification();
   else setTimeout(showNotifBanner,3000);
 })();
