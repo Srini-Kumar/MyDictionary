@@ -96,7 +96,7 @@ async function fetchGeminiBilingual(word,targetLang){
   if(cached)return cached;
 
   const s=getSettings();
-  const prompt=`Act as a formal bilingual dictionary. For the word '${word}', provide the primary English definition, and directly below it, provide the translation of that definition in ${targetLang}. Return ONLY valid JSON in this format: {"english_def": "...", "translated_def": "..."}`;
+  const prompt=`Act formal bilingual dictionary. For the word '${word}', provide its common English definitions in bilingual English and ${targetLang}, clear, simple terms. Then, provide a highly accurate translation of that exact definition in ${targetLang} like Google Dictionary. Output strictly valid JSON and nothing else. Do not use Markdown formatting, code blocks, or include any conversational text. Use this exact schema: {"english_def": "...", "translated_def": "..."}"`;
   const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${s.geminiApiKey}`;
   const res=await fetch(url,{
     method:'POST',
