@@ -1158,7 +1158,9 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 /* ══════════════════════════════════════════════════
    NAVIGATION / TABS
 ══════════════════════════════════════════════════ */
+
 function navigate(s){
+  Store.set('mdict_last_screen', s); // Saves the current screen
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   document.getElementById('screen-'+s).classList.add('active');
@@ -1171,6 +1173,7 @@ function navigate(s){
   if(s==='settings')renderSettingsPage();
   window.scrollTo(0,0);
 }
+
 function switchTab(idx){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
   document.querySelectorAll('.tab-pane').forEach((p,i)=>p.classList.toggle('active',i===idx));
