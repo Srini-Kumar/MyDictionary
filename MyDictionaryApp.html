@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyDictionary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #202124;
+      --surface:   #303134;
+      --surface2:  #3c4043;
+      --accent:    #8ab4f8;
+      --blue:      #4285f4;
+      --text1:     #e8eaed;
+      --text2:     #9aa0a6;
+      --text3:     #bdc1c6;
+      --divider:   rgba(255,255,255,0.1);
+      --red:       #f28b82;
+      --green:     #81c995;
+      --base-size: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text1);
+      font-family: 'Roboto', 'Google Sans', Arial, sans-serif;
+      font-size: var(--base-size);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ─────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .topbar-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--accent);
+      flex: 1;
+      letter-spacing: .1px;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .icon-btn:hover { background: var(--surface2); }
+
+    /* ── SEARCH ──────────────────────────────────────── */
+    .search-container { padding: 16px; }
+    .search-wrapper { position: relative; }
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 24px;
+      padding: 12px 48px 12px 20px;
+      color: var(--text1);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(138,180,248,.15);
+    }
+    .search-input::placeholder { color: var(--text2); }
+    .search-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      display: flex;
+      line-height: 0;
+    }
+
+    /* ── SCREENS ─────────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── EMPTY STATE ─────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text2);
+    }
+    .empty-state svg { width: 56px; height: 56px; opacity: .25; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; font-weight: 400; color: var(--text3); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; line-height: 1.7; }
+
+    /* ── SPINNER ─────────────────────────────────────── */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--surface2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 48px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-sm {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--surface2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+    }
+
+    /* ── ERROR ───────────────────────────────────────── */
+    .error-state { text-align: center; padding: 40px 24px; color: var(--red); line-height: 1.6; }
+
+    /* ── WORD CONTENT ────────────────────────────────── */
+    .word-content { padding: 0 16px 90px; }
+
+    .word-header { padding: 20px 0 16px; }
+    .word-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--text1);
+      line-height: 1.2;
+    }
+    .word-phonetic { font-size: 16px; color: var(--text2); margin-top: 4px; font-style: italic; }
+
+    .pronunciation-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .accent-select {
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 20px;
+      color: var(--text1);
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      font-family: inherit;
+    }
+    .speak-btn {
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 20px;
+      color: var(--accent);
+      padding: 7px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .2s;
+      font-family: inherit;
+    }
+    .speak-btn:hover { background: var(--surface2); }
+    .speak-btn.speaking { color: var(--green); border-color: var(--green); }
+
+    .speed-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .speed-label { font-size: 12px; color: var(--text2); }
+    input[type=range] { accent-color: var(--accent); width: 110px; cursor: pointer; }
+
+    /* ── DIVIDER ─────────────────────────────────────── */
+    .divider { height: 1px; background: var(--divider); margin: 2px 0; }
+
+    /* ── SECTION ─────────────────────────────────────── */
+    .section { padding: 16px 0; }
+    .section-title {
+      font-size: 11px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    /* ── MEANINGS ────────────────────────────────────── */
+    .pos-label {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text2);
+      margin-bottom: 10px;
+      margin-top: 16px;
+    }
+    .pos-label:first-child { margin-top: 0; }
+    .definition-item { display: flex; gap: 10px; margin-bottom: 12px; }
+    .def-num { color: var(--text2); font-size: 13px; min-width: 20px; padding-top: 1px; }
+    .def-text { font-size: 15px; line-height: 1.6; }
+    .def-example {
+      font-size: 13px;
+      color: var(--text2);
+      margin-top: 4px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    /* ── TRANSLATE CARD ──────────────────────────────── */
+    .translate-card {
+      background: var(--surface);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .translate-row { display: grid; grid-template-columns: 1fr 1fr; }
+    .translate-col { padding: 16px; }
+    .translate-col:first-child { border-right: 1px solid var(--divider); }
+    .translate-lang {
+      font-size: 11px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .translate-text { font-size: 20px; line-height: 1.4; color: var(--text1); min-height: 30px; }
+    .translate-speaker {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 50%;
+      line-height: 0;
+    }
+
+    /* ── CHIPS ───────────────────────────────────────── */
+    .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--accent);
+      cursor: pointer;
+      transition: background .15s;
+      font-family: inherit;
+    }
+    .chip:hover { background: var(--surface2); }
+    .chip.ant { color: var(--red); }
+
+    /* ── NGRAM ───────────────────────────────────────── */
+    .ngram-container {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .ngram-loading {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text2);
+      font-size: 13px;
+    }
+    #ngram-canvas { width: 100%; height: 120px; display: none; }
+
+    /* ── HISTORY ─────────────────────────────────────── */
+    .history-list { padding: 0 16px 90px; }
+    .history-search-wrap { padding: 12px 0; }
+    .history-search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text1);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .history-search::placeholder { color: var(--text2); }
+    .history-item {
+      display: flex;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--divider);
+      cursor: pointer;
+      gap: 12px;
+    }
+    .history-item:hover .history-word { color: var(--accent); }
+    .history-word { font-size: 16px; flex: 1; transition: color .15s; }
+    .history-date { font-size: 12px; color: var(--text2); white-space: nowrap; }
+    .history-del {
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      line-height: 0;
+      transition: color .15s;
+    }
+    .history-del:hover { color: var(--red); }
+    .list-empty { text-align: center; color: var(--text2); padding: 40px 0; font-size: 14px; }
+
+    /* ── DAILY WORD ──────────────────────────────────── */
+    .daily-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .daily-word-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin-bottom: 6px;
+    }
+    .daily-pos { font-size: 14px; font-style: italic; color: var(--text2); margin-bottom: 14px; }
+    .daily-def { font-size: 15px; line-height: 1.7; }
+    .daily-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .daily-lang-label {
+      font-size: 11px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+    }
+    .daily-lang-text { font-size: 18px; }
+    .daily-actions { display: flex; gap: 12px; }
+    .btn-primary {
+      flex: 1;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      padding: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--accent);
+      border: 1px solid var(--divider);
+      border-radius: 24px;
+      padding: 12px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: var(--surface2); }
+
+    /* ── SETTINGS ────────────────────────────────────── */
+    .settings-list { padding: 0 16px 90px; }
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--divider);
+      gap: 12px;
+    }
+    .settings-label { font-size: 15px; }
+    .settings-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--surface2);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: .25s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      background: var(--text2);
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: .25s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--blue); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: #fff; }
+    .time-input {
+      background: var(--surface2);
+      border: 1px solid var(--divider);
+      border-radius: 6px;
+      color: var(--text1);
+      padding: 7px 10px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .font-btns { display: flex; gap: 6px; }
+    .font-btn {
+      background: var(--surface2);
+      border: none;
+      color: var(--text1);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: inherit;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background .15s;
+    }
+    .font-btn:hover { background: var(--accent); color: var(--bg); }
+    .danger-btn {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid rgba(242,139,130,.3);
+      transition: background .15s;
+    }
+    .danger-btn:hover { background: rgba(242,139,130,.1); }
+
+    /* ── BOTTOM NAV ──────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border-top: 1px solid var(--divider);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 10px;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      padding: 4px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: inherit;
+      transition: color .2s;
+    }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-item.active { color: var(--accent); }
+
+    /* ── MODAL ───────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      max-width: 680px;
+      padding: 20px 16px 30px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      color: var(--text3);
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 8px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background .15s;
+    }
+    .menu-item:hover { background: var(--surface2); }
+    .menu-item-label { font-size: 15px; }
+
+    /* ── NOTIFICATION BANNER ─────────────────────────── */
+    .notif-banner {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 12px 16px;
+      display: none;
+      gap: 12px;
+      align-items: center;
+    }
+    .notif-banner.show { display: flex; }
+    .notif-banner-text { flex: 1; font-size: 14px; line-height: 1.5; }
+    .notif-allow {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    /* ── TOAST ───────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface2);
+      color: var(--text1);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── SCROLLBAR ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+    @media (max-width: 480px) {
+      .word-title { font-size: 26px; }
+      .translate-text { font-size: 17px; }
+      .daily-word-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">MyDictionary</span>
+    <button class="icon-btn" id="menu-btn" title="Menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- NOTIFICATION PERMISSION BANNER -->
+  <div class="notif-banner" id="notif-banner">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="color:var(--accent);flex-shrink:0">
+      <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+    </svg>
+    <span class="notif-banner-text">Enable notifications to receive your daily word every morning.</span>
+    <button class="notif-allow" id="notif-allow-btn">Enable</button>
+  </div>
+
+  <!-- ══ HOME SCREEN ══════════════════════════════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="search-container">
+      <div class="search-wrapper">
+        <input type="text" class="search-input" id="search-input"
+               placeholder="Search a word…" autocomplete="off" spellcheck="false">
+        <button class="search-btn" id="search-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- States -->
+    <div class="empty-state" id="empty-state">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-6 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm3 14H9v-2h2v-4H9v-2h4v6h2v2z"/>
+      </svg>
+      <h3>Look up any word</h3>
+      <p>Definitions, pronunciation, Tamil translation, and usage history — all in one place.</p>
+    </div>
+    <div id="loading-state" style="display:none"><div class="spinner"></div></div>
+    <div id="error-state" class="error-state" style="display:none"></div>
+
+    <!-- Word Result -->
+    <div class="word-content" id="word-content" style="display:none">
+
+      <!-- Header -->
+      <div class="word-header">
+        <div class="word-title" id="wd-word"></div>
+        <div class="word-phonetic" id="wd-phonetic"></div>
+        <div class="pronunciation-row">
+          <select class="accent-select" id="accent-select">
+            <option value="en-IN">🇮🇳 Indian</option>
+            <option value="en-US" selected>🇺🇸 American</option>
+            <option value="en-GB">🇬🇧 British</option>
+          </select>
+          <button class="speak-btn" id="speak-btn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+            Speak
+          </button>
+        </div>
+        <div class="speed-row">
+          <span class="speed-label">Slow</span>
+          <input type="range" id="speed-slider" min="0.5" max="1.8" step="0.1" value="1">
+          <span class="speed-label">Fast</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Definitions -->
+      <div class="section">
+        <div id="wd-meanings"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Translation -->
+      <div class="section">
+        <div class="section-title">Translation</div>
+        <div class="translate-card">
+          <div class="translate-row">
+            <div class="translate-col">
+              <div class="translate-lang">
+                English
+                <button class="translate-speaker" id="speak-en-btn" title="Speak English">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="translate-text" id="translate-en">—</div>
+            </div>
+            <div class="translate-col">
+              <div class="translate-lang">
+                Tamil
+                <button class="translate-speaker" id="speak-ta-btn" title="Speak Tamil">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="translate-text" id="translate-ta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider" id="syn-divider" style="display:none"></div>
+
+      <!-- Synonyms / Antonyms -->
+      <div class="section" id="synonyms-section" style="display:none">
+        <div id="wd-synonyms"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Ngram -->
+      <div class="section">
+        <div class="section-title">Usage over time</div>
+        <div class="ngram-container">
+          <div class="ngram-loading" id="ngram-loading">Loading usage data…</div>
+          <canvas id="ngram-canvas"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ HISTORY SCREEN ════════════════════════════════ -->
+  <div class="screen" id="screen-history">
+    <div class="history-list">
+      <div class="history-search-wrap">
+        <input type="text" class="history-search" id="history-filter" placeholder="Filter history…">
+      </div>
+      <div id="history-list-inner"></div>
+    </div>
+  </div>
+
+  <!-- ══ DAILY WORD SCREEN ══════════════════════════════ -->
+  <div class="screen" id="screen-daily">
+    <div style="padding:16px 16px 90px" id="daily-content"></div>
+  </div>
+
+  <!-- ══ SETTINGS SCREEN ════════════════════════════════ -->
+  <div class="screen" id="screen-settings">
+    <div class="settings-list">
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Daily Word Notifications</div>
+          <div class="settings-sub">Receive a new word each morning</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="notif-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Notification Time</div>
+          <div class="settings-sub">When to receive the daily word</div>
+        </div>
+        <input type="time" class="time-input" id="notif-time" value="08:00">
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Text Size</div>
+          <div class="settings-sub" id="font-size-label">Medium</div>
+        </div>
+        <div class="font-btns">
+          <button class="font-btn" id="font-decrease">A−</button>
+          <button class="font-btn" id="font-increase">A+</button>
+        </div>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Daily Word Queue</div>
+          <div class="settings-sub" id="queue-count">0 words queued</div>
+        </div>
+        <button class="danger-btn" id="clear-queue-btn">Clear</button>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Search History</div>
+          <div class="settings-sub" id="history-count">0 words</div>
+        </div>
+        <button class="danger-btn" id="clear-history-btn">Clear All</button>
+      </div>
+      <div class="settings-item" style="border:none">
+        <div>
+          <div class="settings-label" style="color:var(--text2)">MyDictionary</div>
+          <div class="settings-sub">Google Dictionary–style word app</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="navigate('home')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </button>
+    <button class="nav-item" id="nav-history" onclick="navigate('history')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      History
+    </button>
+    <button class="nav-item" id="nav-daily" onclick="navigate('daily')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      Daily Word
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="navigate('settings')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- CONTEXT MENU MODAL -->
+  <div class="modal-overlay" id="menu-modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title">Options</div>
+      <div class="menu-item" id="menu-add-daily">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="color:var(--accent)">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+        </svg>
+        <span class="menu-item-label">Add to Daily Word Queue</span>
+      </div>
+      <div class="menu-item" onclick="navigate('history');closeModal()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="color:var(--accent)">
+          <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21L9.5 12.21V8H12z"/>
+        </svg>
+        <span class="menu-item-label">History</span>
+      </div>
+      <div class="menu-item" onclick="navigate('settings');closeModal()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="color:var(--accent)">
+          <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+        </svg>
+        <span class="menu-item-label">Settings</span>
+      </div>
+      <div class="menu-item" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="color:var(--text2)">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+        <span class="menu-item-label" style="color:var(--text2)">Close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════════════════ */
+const Store = {
+  get(k, d = null) {
+    try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : d; }
+    catch { return d; }
+  },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k)    { localStorage.removeItem(k); }
+};
+
+const K = {
+  HISTORY:    'mdict_history',
+  QUEUE:      'mdict_queue',
+  SETTINGS:   'mdict_settings',
+  LAST_DAILY: 'mdict_last_daily'
+};
+
+const FALLBACK = [
+  'ephemeral','serendipity','mellifluous','sonder','hiraeth',
+  'perspicacious','resilience','ubiquitous','capricious','ineffable',
+  'luminous','tenacious','wanderlust','solitude','eloquent',
+  'loquacious','magnanimous','pedantic','quixotic','sanguine'
+];
+
+/* ═══════════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════════ */
+function getSettings() {
+  return Store.get(K.SETTINGS, { notifEnabled: false, notifTime: '08:00', fontSize: 14 });
+}
+function saveSettings(s) { Store.set(K.SETTINGS, s); }
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let currentWord = null;
+
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════ */
+function navigate(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  const nb = document.getElementById('nav-' + screen);
+  if (nb) nb.classList.add('active');
+  const titles = { home:'MyDictionary', history:'History', daily:'Daily Word', settings:'Settings' };
+  document.getElementById('topbar-title').textContent = titles[screen] || 'MyDictionary';
+  if (screen === 'history')  renderHistory();
+  if (screen === 'daily')    renderDailyWord();
+  if (screen === 'settings') renderSettingsPage();
+  window.scrollTo(0, 0);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════ */
+function openModal()  { document.getElementById('menu-modal').classList.add('open'); }
+function closeModal() { document.getElementById('menu-modal').classList.remove('open'); }
+
+/* ═══════════════════════════════════════════════════════
+   DICTIONARY API  (dictionaryapi.dev)
+═══════════════════════════════════════════════════════ */
+async function fetchDefinition(word) {
+  const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim().toLowerCase())}`);
+  if (!res.ok) throw new Error('not found');
+  const arr = await res.json();
+  return arr[0];
+}
+
+/* ═══════════════════════════════════════════════════════
+   TRANSLATION  (MyMemory)
+═══════════════════════════════════════════════════════ */
+async function translateToTamil(text) {
+  try {
+    const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ta`);
+    const d = await r.json();
+    return d.responseData?.translatedText || '—';
+  } catch { return '—'; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   NGRAM
+═══════════════════════════════════════════════════════ */
+async function fetchNgram(word) {
+  const base = `https://books.google.com/ngrams/json?content=${encodeURIComponent(word)}&year_start=1900&year_end=2019&corpus=26&smoothing=3`;
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(base)}`;
+  const r = await fetch(proxy);
+  const outer = await r.json();
+  const inner = JSON.parse(outer.contents);
+  return inner[0]?.timeseries || null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOOKUP
+═══════════════════════════════════════════════════════ */
+async function lookupWord(word) {
+  word = word.trim().toLowerCase();
+  if (!word) return;
+  currentWord = word;
+
+  // navigate to home if we aren't already there
+  if (!document.getElementById('screen-home').classList.contains('active')) {
+    navigate('home');
+  }
+
+  const $empty   = document.getElementById('empty-state');
+  const $loading = document.getElementById('loading-state');
+  const $error   = document.getElementById('error-state');
+  const $content = document.getElementById('word-content');
+
+  $empty.style.display = 'none';
+  $error.style.display = 'none';
+  $content.style.display = 'none';
+  $loading.style.display = 'block';
+
+  try {
+    const data = await fetchDefinition(word);
+
+    $loading.style.display = 'none';
+    $content.style.display = 'block';
+    window.scrollTo(0, 0);
+
+    // Header
+    document.getElementById('wd-word').textContent = data.word;
+    const phonetic = data.phonetic || data.phonetics?.find(p => p.text)?.text || '';
+    document.getElementById('wd-phonetic').textContent = phonetic;
+
+    // Meanings
+    renderMeanings(data.meanings);
+
+    // Translation
+    document.getElementById('translate-en').textContent = data.word;
+    document.getElementById('translate-ta').innerHTML = '<span class="spinner-sm"></span>';
+    translateToTamil(data.word).then(ta => {
+      document.getElementById('translate-ta').textContent = ta;
+    });
+
+    // Synonyms / Antonyms
+    renderSynonyms(data.meanings);
+
+    // Ngram
+    document.getElementById('ngram-loading').style.display = 'flex';
+    document.getElementById('ngram-loading').textContent = 'Loading usage data…';
+    document.getElementById('ngram-canvas').style.display = 'none';
+    fetchNgram(word)
+      .then(ts => drawNgram(ts))
+      .catch(() => { document.getElementById('ngram-loading').textContent = 'Usage data unavailable'; });
+
+    // History
+    addToHistory(word);
+
+  } catch {
+    $loading.style.display = 'none';
+    $error.style.display = 'block';
+    $error.textContent = `"${word}" was not found. Please check the spelling.`;
+  }
+}
+
+/* ── Meanings ── */
+function renderMeanings(meanings) {
+  const el = document.getElementById('wd-meanings');
+  el.innerHTML = '';
+  meanings.forEach(m => {
+    const pos = document.createElement('div');
+    pos.className = 'pos-label';
+    pos.textContent = m.partOfSpeech;
+    el.appendChild(pos);
+    m.definitions.slice(0, 4).forEach((def, i) => {
+      const item = document.createElement('div');
+      item.className = 'definition-item';
+      item.innerHTML = `
+        <span class="def-num">${i + 1}.</span>
+        <div>
+          <div class="def-text">${def.definition}</div>
+          ${def.example ? `<div class="def-example">"${def.example}"</div>` : ''}
+        </div>`;
+      el.appendChild(item);
+    });
+  });
+}
+
+/* ── Synonyms/Antonyms ── */
+function renderSynonyms(meanings) {
+  const syns = [...new Set(
+    meanings.flatMap(m => (m.synonyms||[]).concat(m.definitions.flatMap(d => d.synonyms||[])))
+  )].slice(0, 8);
+  const ants = [...new Set(
+    meanings.flatMap(m => (m.antonyms||[]).concat(m.definitions.flatMap(d => d.antonyms||[])))
+  )].slice(0, 6);
+
+  const sec = document.getElementById('synonyms-section');
+  const div = document.getElementById('syn-divider');
+  const container = document.getElementById('wd-synonyms');
+  container.innerHTML = '';
+
+  if (!syns.length && !ants.length) {
+    sec.style.display = 'none';
+    div.style.display = 'none';
+    return;
+  }
+
+  sec.style.display = 'block';
+  div.style.display = 'block';
+
+  if (syns.length) {
+    container.insertAdjacentHTML('beforeend', '<div class="section-title">Similar words</div>');
+    const list = document.createElement('div');
+    list.className = 'chip-list';
+    syns.forEach(s => {
+      const c = document.createElement('button');
+      c.className = 'chip';
+      c.textContent = s;
+      c.onclick = () => { document.getElementById('search-input').value = s; lookupWord(s); };
+      list.appendChild(c);
+    });
+    container.appendChild(list);
+  }
+
+  if (ants.length) {
+    const h = document.createElement('div');
+    h.className = 'section-title';
+    h.style.marginTop = '14px';
+    h.textContent = 'Antonyms';
+    container.appendChild(h);
+    const list = document.createElement('div');
+    list.className = 'chip-list';
+    ants.forEach(a => {
+      const c = document.createElement('button');
+      c.className = 'chip ant';
+      c.textContent = a;
+      c.onclick = () => { document.getElementById('search-input').value = a; lookupWord(a); };
+      list.appendChild(c);
+    });
+    container.appendChild(list);
+  }
+}
+
+/* ── Ngram Chart ── */
+function drawNgram(timeseries) {
+  const loadEl  = document.getElementById('ngram-loading');
+  const canvas  = document.getElementById('ngram-canvas');
+
+  if (!timeseries || !timeseries.length) {
+    loadEl.textContent = 'No usage data available';
+    return;
+  }
+
+  loadEl.style.display = 'none';
+  canvas.style.display = 'block';
+
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 32;
+  const H = 120;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const d   = timeseries;
+  const n   = d.length;
+  const min = Math.min(...d);
+  const max = Math.max(...d);
+  const rng = max - min || 1;
+  const pad = { t: 10, b: 24, l: 8, r: 8 };
+  const pw  = W - pad.l - pad.r;
+  const ph  = H - pad.t - pad.b;
+
+  const gx = i => pad.l + (i / (n - 1)) * pw;
+  const gy = v => pad.t + ph - ((v - min) / rng) * ph;
+
+  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ph);
+  grad.addColorStop(0, 'rgba(138,180,248,.45)');
+  grad.addColorStop(1, 'rgba(138,180,248,.02)');
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(gx(0), H - pad.b);
+  d.forEach((v, i) => ctx.lineTo(gx(i), gy(v)));
+  ctx.lineTo(gx(n-1), H - pad.b);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  d.forEach((v, i) => i === 0 ? ctx.moveTo(gx(i), gy(v)) : ctx.lineTo(gx(i), gy(v)));
+  ctx.strokeStyle = 'rgba(138,180,248,.9)';
+  ctx.lineWidth = 1.8;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Year labels
+  ctx.fillStyle = 'rgba(154,160,166,.75)';
+  ctx.font = `10px Roboto, Arial`;
+  ctx.textAlign = 'center';
+  [1900, 1920, 1940, 1960, 1980, 2000, 2019].forEach(yr => {
+    const i = yr - 1900;
+    if (i >= 0 && i < n) ctx.fillText(yr, gx(i), H - 6);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   TTS
+═══════════════════════════════════════════════════════ */
+function speak(text, lang) {
+  if (!window.speechSynthesis) { showToast('TTS not supported in this browser'); return; }
+  window.speechSynthesis.cancel();
+  const utt  = new SpeechSynthesisUtterance(text);
+  utt.lang   = lang;
+  utt.rate   = parseFloat(document.getElementById('speed-slider').value);
+  const voices = window.speechSynthesis.getVoices();
+  const match  = voices.find(v => v.lang === lang) || voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+  if (match) utt.voice = match;
+  const btn = document.getElementById('speak-btn');
+  btn.classList.add('speaking');
+  utt.onend = utt.onerror = () => btn.classList.remove('speaking');
+  window.speechSynthesis.speak(utt);
+}
+
+/* ═══════════════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════════════ */
+function addToHistory(word) {
+  let h = Store.get(K.HISTORY, []);
+  h = h.filter(x => x.word !== word);
+  h.unshift({ word, date: new Date().toLocaleDateString() });
+  if (h.length > 200) h = h.slice(0, 200);
+  Store.set(K.HISTORY, h);
+}
+
+function renderHistory() {
+  const filter = (document.getElementById('history-filter').value || '').toLowerCase();
+  let h = Store.get(K.HISTORY, []);
+  if (filter) h = h.filter(x => x.word.toLowerCase().includes(filter));
+  const el = document.getElementById('history-list-inner');
+  if (!h.length) {
+    el.innerHTML = `<div class="list-empty">${filter ? 'No matches found.' : 'No words searched yet.'}</div>`;
+    return;
+  }
+  el.innerHTML = h.map((x, i) => `
+    <div class="history-item"
+         onclick="navigate('home');document.getElementById('search-input').value='${x.word}';lookupWord('${x.word}')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="color:var(--text2);flex-shrink:0">
+        <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21L9.5 12.21V8H12z"/>
+      </svg>
+      <span class="history-word">${x.word}</span>
+      <span class="history-date">${x.date}</span>
+      <button class="history-del" title="Remove"
+              onclick="event.stopPropagation();delHistory(${i})">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>`).join('');
+}
+
+function delHistory(i) {
+  let h = Store.get(K.HISTORY, []);
+  h.splice(i, 1);
+  Store.set(K.HISTORY, h);
+  renderHistory();
+}
+
+/* ═══════════════════════════════════════════════════════
+   DAILY WORD QUEUE
+═══════════════════════════════════════════════════════ */
+function getQueue()    { return Store.get(K.QUEUE, []); }
+function saveQueue(q)  { Store.set(K.QUEUE, q); }
+
+function addToQueue(word) {
+  if (!word) return;
+  const q = getQueue();
+  if (q.includes(word)) { showToast(`"${word}" already in queue`); return; }
+  q.push(word);
+  saveQueue(q);
+  showToast(`"${word}" added to daily queue`);
+  updateQueueLabel();
+}
+
+function updateQueueLabel() {
+  const el = document.getElementById('queue-count');
+  if (el) el.textContent = `${getQueue().length} words queued`;
+}
+
+function updateHistoryLabel() {
+  const el = document.getElementById('history-count');
+  if (el) el.textContent = `${Store.get(K.HISTORY, []).length} words`;
+}
+
+async function pickNextWord() {
+  const q = getQueue();
+  if (q.length) {
+    const w = q.shift();
+    saveQueue(q);
+    return w;
+  }
+  return FALLBACK[Math.floor(Math.random() * FALLBACK.length)];
+}
+
+/* ═══════════════════════════════════════════════════════
+   DAILY WORD SCREEN
+═══════════════════════════════════════════════════════ */
+async function renderDailyWord() {
+  const el    = document.getElementById('daily-content');
+  const today = new Date().toDateString();
+  const saved = Store.get(K.LAST_DAILY, null);
+
+  if (saved && saved.date === today) {
+    buildDailyCard(el, saved);
+    return;
+  }
+
+  el.innerHTML = '<div class="spinner"></div>';
+  const word = await pickNextWord();
+
+  try {
+    const data = await fetchDefinition(word);
+    const def  = data.meanings?.[0]?.definitions?.[0]?.definition || '';
+    const pos  = data.meanings?.[0]?.partOfSpeech || '';
+    const ta   = await translateToTamil(data.word);
+    const obj  = { word: data.word, date: today, pos, definition: def, tamil: ta };
+    Store.set(K.LAST_DAILY, obj);
+    buildDailyCard(el, obj);
+    addToHistory(data.word);
+  } catch {
+    el.innerHTML = '<div class="error-state">Could not load daily word. Please try again.</div>';
+  }
+}
+
+function buildDailyCard(el, d) {
+  el.innerHTML = `
+    <div style="padding:8px 0 14px">
+      <div class="section-title">Word of the Day</div>
+      <div style="font-size:12px;color:var(--text2)">${d.date}</div>
+    </div>
+    <div class="daily-card">
+      <div class="daily-word-title">${d.word}</div>
+      <div class="daily-pos">${d.pos}</div>
+      <div class="daily-def">${d.definition}</div>
+      <div class="divider" style="margin:16px 0"></div>
+      <div class="daily-grid">
+        <div>
+          <div class="daily-lang-label">English</div>
+          <div class="daily-lang-text">${d.word}</div>
+        </div>
+        <div>
+          <div class="daily-lang-label">Tamil</div>
+          <div class="daily-lang-text">${d.tamil}</div>
+        </div>
+      </div>
+    </div>
+    <div class="daily-actions">
+      <button class="btn-primary"
+        onclick="navigate('home');document.getElementById('search-input').value='${d.word}';lookupWord('${d.word}')">
+        View Full Definition
+      </button>
+      <button class="btn-secondary" onclick="Store.del('${K.LAST_DAILY}');renderDailyWord()">
+        New Word
+      </button>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATIONS
+═══════════════════════════════════════════════════════ */
+async function requestPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  const r = await Notification.requestPermission();
+  return r === 'granted';
+}
+
+let _notifTimer;
+function scheduleNotification() {
+  const s = getSettings();
+  if (!s.notifEnabled) return;
+  clearTimeout(_notifTimer);
+
+  const [h, m] = s.notifTime.split(':').map(Number);
+  const now    = new Date();
+  const target = new Date();
+  target.setHours(h, m, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+
+  _notifTimer = setTimeout(async () => {
+    const ok = await requestPermission();
+    if (ok) {
+      const word = await pickNextWord();
+      try {
+        const data = await fetchDefinition(word);
+        const def  = data.meanings?.[0]?.definitions?.[0]?.definition || '';
+        new Notification('📖 Word of the Day: ' + data.word, {
+          body: def.length > 120 ? def.slice(0, 117) + '…' : def
+        });
+        const ta  = await translateToTamil(data.word);
+        const pos = data.meanings?.[0]?.partOfSpeech || '';
+        Store.set(K.LAST_DAILY, { word: data.word, date: new Date().toDateString(), pos, definition: def, tamil: ta });
+      } catch {}
+    }
+    scheduleNotification();
+  }, target - now);
+}
+
+function showNotifBanner() {
+  if (!('Notification' in window)) return;
+  const s = getSettings();
+  if (s.notifEnabled || Notification.permission === 'denied') return;
+  if (Notification.permission !== 'granted') {
+    document.getElementById('notif-banner').classList.add('show');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SETTINGS PAGE
+═══════════════════════════════════════════════════════ */
+function renderSettingsPage() {
+  const s = getSettings();
+  document.getElementById('notif-toggle').checked = s.notifEnabled;
+  document.getElementById('notif-time').value     = s.notifTime;
+  updateFontLabel(s.fontSize);
+  updateQueueLabel();
+  updateHistoryLabel();
+}
+
+const FONT_SIZES  = [12, 14, 16, 18];
+const FONT_LABELS = { 12:'Small', 14:'Medium', 16:'Large', 18:'Extra Large' };
+function updateFontLabel(sz) {
+  document.getElementById('font-size-label').textContent = FONT_LABELS[sz] || 'Medium';
+  document.documentElement.style.setProperty('--base-size', sz + 'px');
+}
+
+/* ═══════════════════════════════════════════════════════
+   EVENT LISTENERS
+═══════════════════════════════════════════════════════ */
+document.getElementById('search-btn').onclick = () => {
+  const v = document.getElementById('search-input').value.trim();
+  if (v) lookupWord(v);
+};
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const v = e.target.value.trim(); if (v) lookupWord(v); }
+});
+
+document.getElementById('speak-btn').onclick = () => {
+  if (currentWord) speak(currentWord, document.getElementById('accent-select').value);
+};
+document.getElementById('speak-en-btn').onclick = () => {
+  if (currentWord) speak(currentWord, 'en-US');
+};
+document.getElementById('speak-ta-btn').onclick = () => {
+  const ta = document.getElementById('translate-ta').textContent.trim();
+  if (ta && ta !== '—') speak(ta, 'ta-IN');
+};
+
+document.getElementById('menu-btn').onclick = openModal;
+
+document.getElementById('menu-add-daily').onclick = () => {
+  if (currentWord) addToQueue(currentWord);
+  else showToast('Search a word first');
+  closeModal();
+};
+
+document.getElementById('history-filter').addEventListener('input', renderHistory);
+
+document.getElementById('notif-toggle').addEventListener('change', async e => {
+  const s = getSettings();
+  if (e.target.checked) {
+    const ok = await requestPermission();
+    if (!ok) {
+      showToast('Notification permission denied');
+      e.target.checked = false;
+      return;
+    }
+    s.notifEnabled = true;
+    saveSettings(s);
+    scheduleNotification();
+    document.getElementById('notif-banner').classList.remove('show');
+    showToast('Daily word notifications enabled');
+  } else {
+    s.notifEnabled = false;
+    saveSettings(s);
+    clearTimeout(_notifTimer);
+    showToast('Notifications disabled');
+  }
+});
+
+document.getElementById('notif-time').addEventListener('change', e => {
+  const s = getSettings();
+  s.notifTime = e.target.value;
+  saveSettings(s);
+  if (s.notifEnabled) scheduleNotification();
+  showToast('Notification time updated');
+});
+
+document.getElementById('notif-allow-btn').addEventListener('click', async () => {
+  const ok = await requestPermission();
+  if (ok) {
+    const s = getSettings();
+    s.notifEnabled = true;
+    saveSettings(s);
+    scheduleNotification();
+    document.getElementById('notif-banner').classList.remove('show');
+    showToast('Daily word notifications enabled');
+  } else {
+    showToast('Permission denied — please allow in browser settings');
+  }
+});
+
+document.getElementById('font-increase').onclick = () => {
+  const s = getSettings();
+  const i = FONT_SIZES.indexOf(s.fontSize);
+  if (i < FONT_SIZES.length - 1) { s.fontSize = FONT_SIZES[i + 1]; saveSettings(s); updateFontLabel(s.fontSize); }
+};
+document.getElementById('font-decrease').onclick = () => {
+  const s = getSettings();
+  const i = FONT_SIZES.indexOf(s.fontSize);
+  if (i > 0) { s.fontSize = FONT_SIZES[i - 1]; saveSettings(s); updateFontLabel(s.fontSize); }
+};
+
+document.getElementById('clear-history-btn').onclick = () => {
+  if (!confirm('Clear all search history?')) return;
+  Store.del(K.HISTORY);
+  updateHistoryLabel();
+  showToast('History cleared');
+};
+
+document.getElementById('clear-queue-btn').onclick = () => {
+  if (!confirm('Clear the daily word queue?')) return;
+  Store.del(K.QUEUE);
+  updateQueueLabel();
+  showToast('Queue cleared');
+};
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+(function init() {
+  const s = getSettings();
+  updateFontLabel(s.fontSize);
+
+  // Load voices
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
+  }
+
+  // Reschedule notification if already permitted
+  if (s.notifEnabled && ('Notification' in window) && Notification.permission === 'granted') {
+    scheduleNotification();
+  } else {
+    // Show soft prompt if not decided yet
+    setTimeout(showNotifBanner, 3000);
+  }
+})();
+</script>
+</body>
+</html>
