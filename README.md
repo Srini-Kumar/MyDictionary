@@ -38,3 +38,7 @@ This is a professional, responsive web dictionary application featuring multi-so
 *   **Offline Caching:** Saves searches locally for instant loading (adjustable storage limit).
 *   **Backup & Restore:** Export and import app data, settings, and caches via JSON files.
 *   **Responsive UI:** Fully optimized for mobile (bottom nav), tablet, and desktop (sidebar nav) with a clean, dark theme.
+
+
+
+### Website link: https://srini-kumar.github.io/MyDictionary/
