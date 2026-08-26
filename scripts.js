@@ -951,6 +951,15 @@ function addBulkToQueue(){
   showToast(`Added ${added} word${added!==1?'s':''} to queue`);
 }
 
+function removeFromQueue(index){
+  let q=getQueue();
+  q.splice(index,1);
+  saveQueue(q);
+  updateQueueLabel();
+  showToast('Removed from queue');
+  renderDailyWord(); // Refresh the daily screen to update the list
+}
+
 async function pickNextWord(){
   const q=getQueue();if(q.length){const w=q.shift();saveQueue(q);return w;}
   return FALLBACK[Math.floor(Math.random()*FALLBACK.length)];
@@ -1007,13 +1016,15 @@ function buildDailyCard(el,d){
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="color:var(--text2);flex-shrink:0"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 9V3.5L18.5 9H13z"/></svg>
               <span class="history-word">${w}</span>
               ${i===0?'<span style="font-size:11px;color:var(--accent);background:rgba(138,180,248,.13);padding:2px 8px;border-radius:4px">Next</span>':''}
+              <button class="history-del" onclick="event.stopPropagation();removeFromQueue(${i})" title="Remove from queue">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
             </div>
           `).join('')}
         </div>
       </div>`;
   }
 }
-
 /* ══════════════════════════════════════════════════
    NOTIFICATIONS
 ══════════════════════════════════════════════════ */
