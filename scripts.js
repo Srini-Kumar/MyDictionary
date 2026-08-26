@@ -1202,7 +1202,9 @@ function renderSettingsPage(){
   if(langEl)langEl.value=s.targetLanguage||'Tamil';
   updateFontLabel(s.fontSize);updateQueueLabel();updateHistoryLabel();
   const bmCountEl=document.getElementById('bookmark-count'); if(bmCountEl) bmCountEl.textContent=`${getBookmarks().length} words bookmarked`;
+  updateCacheLabel();
 }
+
 const FSIZES=[12,14,16,18],FLABELS={12:'Small',14:'Medium',16:'Large',18:'Extra Large'};
 function updateFontLabel(sz){
   document.getElementById('font-size-label').textContent=FLABELS[sz]||'Medium';
