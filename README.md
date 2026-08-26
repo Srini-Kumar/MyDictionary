@@ -1,6 +1,7 @@
 # MyDictionary
 
-This is a professional, responsive web dictionary application featuring multi-source API integration, Gemini flash powered bilingual translation, and offline caching. It is build using AI. 
+I have been studying English for a long time, and building my vocabulary has been one of my biggest challenges. Because no existing dictionary app met my needs, I began developing my own web app, MyDictionary. It includes a 'Daily Queue' feature that sends daily notifications to help learn new words. Words can be added to the queue to be reviewed later. I built this application specifically for my own personal use.
+This is a  responsive web dictionary application featuring multi-source API integration, Gemini flash powered bilingual translation, and offline caching. It is build using AI. 
 
 ## Features
 
@@ -38,6 +39,31 @@ This is a professional, responsive web dictionary application featuring multi-so
 *   **Offline Caching:** Saves searches locally for instant loading (adjustable storage limit).
 *   **Backup & Restore:** Export and import app data, settings, and caches via JSON files.
 *   **Responsive UI:** Fully optimized for mobile (bottom nav), tablet, and desktop (sidebar nav) with a clean, dark theme.
+
+
+
+
+## Images:
+
+## Homepage:
+<img width="1365" height="590" alt="Screenshot 2026-08-26 at 15-06-26 MyDictionary" src="https://github.com/user-attachments/assets/18aa32ad-a924-45dc-a298-0a551f66db24" />
+
+<img width="1354" height="1152" alt="Screenshot 2026-08-26 at 15-06-58 MyDictionary" src="https://github.com/user-attachments/assets/bdf9eb96-bdad-40b4-897e-00523ccf3cca" />
+
+## History:
+<img width="1365" height="590" alt="Screenshot 2026-08-26 at 15-07-04 MyDictionary" src="https://github.com/user-attachments/assets/9fa94ba8-a43f-45d4-bf4c-b0cac859f459" />
+
+## Bookmark:
+<img width="1365" height="590" alt="Screenshot 2026-08-26 at 15-07-45 MyDictionary" src="https://github.com/user-attachments/assets/8a577def-000c-42e7-9871-fe83043d7104" />
+
+## Dailyword:
+<img width="1354" height="676" alt="Screenshot 2026-08-26 at 15-07-13 MyDictionary" src="https://github.com/user-attachments/assets/f7df62ca-f9af-48f8-aff0-b0261153c9a8" />
+
+## Settings:
+<img width="1353" height="1304" alt="Screenshot 2026-08-26 at 15-07-30 MyDictionary" src="https://github.com/user-attachments/assets/eb66a57e-2682-4eb7-bb67-d767ad9535f6" />
+
+
+
 
 
 
