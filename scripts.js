@@ -1249,6 +1249,23 @@ document.getElementById('cache-limit-mb').addEventListener('change',e=>{
   enforceCacheLimitMB();showToast(`Cache limit set to ${s.cacheLimitMB} MB`);
 });
 
+document.getElementById('clear-cache-btn').onclick=()=>{
+  if(!confirm('Clear all cached word data?'))return;
+  const keys=Store.get('mdict_cache_keys',[]);
+  keys.forEach(k=>{
+    Store.del(`mdict_data_${k}`);
+    Store.del(`mdict_gemini_${k}`);
+  });
+  Store.set('mdict_cache_keys',[]);
+  updateCacheLabel();
+  showToast('Cache cleared');
+};
+
+function updateCacheLabel(){
+  const el=document.getElementById('cache-count');
+  if(el) el.textContent=`${Store.get('mdict_cache_keys',[]).length} words cached`;
+}
+
 document.getElementById('backup-btn').addEventListener('click',openBackupModal);
 document.getElementById('restore-file-input').addEventListener('change',function(){importBackup(this);});
 
