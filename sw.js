@@ -19,3 +19,20 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(res => res || fetch(e.request))
   );
 });
+
+Notification.requestPermission();
+
+self.addEventListener('push', (event) => {
+  event.waitUntil(
+    self.registration.showNotification('Notification Title', {
+      body: 'Notification Body Text',
+      icon: 'icon-512.png',
+    });
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close(); 
+    var fullPath = self.location.origin + event.notification.data.path; 
+    clients.openWindow(fullPath); 
+});
