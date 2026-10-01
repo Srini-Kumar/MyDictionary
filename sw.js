@@ -1,11 +1,11 @@
 const CACHE_NAME = 'my-dict-cache-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './styles.css',
-  './scripts.js',
-  './manifest.json',
-  './icon-512.png'
+  '/MyDictionary/',
+  '/MyDictionary/index.html',
+  '/MyDictionary/styles.css',
+  '/MyDictionary/scripts.js',
+  '/MyDictionary/manifest.json',
+  '/MyDictionary/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
@@ -25,7 +25,7 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification('Notification Title', {
       body: 'Notification Body Text',
-      icon: 'icon-512.png',
+      icon: '/MyDictionary/icon-512.png',
       data: { path: '/MyDictionary/' }
     })
   );
