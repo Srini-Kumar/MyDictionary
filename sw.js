@@ -9,30 +9,30 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
-  );
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(res => res || fetch(e.request))
-  );
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
 });
 
-Notification.requestPermission();
-
-self.addEventListener('push', (event) => {
+self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification('Notification Title', {
       body: 'Notification Body Text',
       icon: 'icon-512.png',
-    });
+      data: { path: '/MyDictionary/' }
+    })
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
-    event.notification.close(); 
-    var fullPath = self.location.origin + event.notification.data.path; 
-    clients.openWindow(fullPath); 
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const path = (event.notification.data && event.notification.data.path) || '/MyDictionary/';
+  event.waitUntil(clients.openWindow(self.location.origin + path));
 });
