@@ -43,17 +43,20 @@ async function translateWord(text,targetLangName){
   const code=getLangCode(targetLangName||getTargetLang());
   try{
     const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${code}`,{signal:AbortSignal.timeout(7000)});
-    const d=await r.json();
-    if(d.responseStatus===200&&d.responseData?.translatedText){
+    if(!r.ok) throw new Error('API Error');
+    const d=await r.json().catch(()=>null); // Safe parse
+    if(d && d.responseStatus===200 && d.responseData?.translatedText){
       const t=d.responseData.translatedText;
       if(!t.toLowerCase().includes('mymemory')&&t.trim()!==text.trim())return t;
     }
   }catch{}
   try{
     const r=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${code}&dt=t&q=${encodeURIComponent(text)}`);
-    const d=await r.json();
-    return d[0]?.map(c=>c[0]).join('')||'—';
-  }catch{return'—';}
+    if(!r.ok) throw new Error('API Error');
+    const d=await r.json().catch(()=>null); // Safe parse
+    if(d) return d[0]?.map(c=>c[0]).join('')||'—';
+  }catch{}
+  return'—';
 }
 
 /* ══════════════════════════════════════════════════
@@ -569,7 +572,8 @@ async function fetchNgram(word){
     const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
     if(!r.ok)throw 0;
     const txt=await r.text();
-    const j=JSON.parse(txt);
+    let j;
+    try { j = JSON.parse(txt); } catch(e) { throw 0; } // Prevents JSON.parse crash
     const arr=Array.isArray(j)?j:(j.contents?JSON.parse(j.contents):null);
     if(!arr?.[0]?.timeseries?.length)throw 0;
     return arr[0].timeseries;
